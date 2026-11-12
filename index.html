@@ -182,27 +182,155 @@ b.classList.add("active");
 document.getElementById("pageTitle").textContent=b.textContent.trim();
 });
 
-function novoCliente(){
-let nome=prompt("Nome da empresa:");
-if(!nome||!nome.trim())return;
-let segmento=prompt("Segmento da empresa:")||"Não informado";
-let cidade=prompt("Cidade:")||"Não informada";
-let telefone=prompt("Telefone/WhatsApp:")||"";
-let valor=Number(prompt("Valor estimado (somente números):")||0);
-clientes.push({id:Date.now(),nome:nome.trim(),segmento,cidade,telefone,valor,etapa:"Lead",obs:""});
-salvar();
+
+function abrirFormulario(cliente = null) {
+  const modalAntigo = document.getElementById("modalEmpresa");
+  if (modalAntigo) modalAntigo.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "modalEmpresa";
+
+  modal.innerHTML = `
+    <style>
+      #modalEmpresa {
+        position:fixed; inset:0; z-index:9999;
+        background:rgba(0,0,0,.75);
+        display:flex; align-items:center;
+        justify-content:center; padding:20px;
+      }
+      #modalEmpresa .caixa {
+        background:#101a2b; color:#fff;
+        width:100%; max-width:520px;
+        padding:25px; border-radius:16px;
+        border:1px solid #26384b;
+        max-height:90vh; overflow:auto;
+        font-family:Arial,sans-serif;
+      }
+      #modalEmpresa h2 { margin-top:0; }
+      #modalEmpresa label {
+        display:block; margin:13px 0 6px;
+        color:#b8c5d1; font-size:13px;
+      }
+      #modalEmpresa input,
+      #modalEmpresa select {
+        width:100%; box-sizing:border-box;
+        padding:12px; border-radius:8px;
+        border:1px solid #34475a;
+        background:#182538; color:white;
+        outline:none;
+      }
+      #modalEmpresa input:focus,
+      #modalEmpresa select:focus {
+        border-color:#20b965;
+      }
+      #modalEmpresa .botoes {
+        display:flex; justify-content:flex-end;
+        gap:10px; margin-top:22px;
+      }
+      #modalEmpresa button {
+        padding:11px 17px; border:0;
+        border-radius:8px; cursor:pointer;
+        font-weight:bold;
+      }
+      #modalEmpresa .cancelar {
+        background:#344253; color:white;
+      }
+      #modalEmpresa .salvar {
+        background:#20b965; color:#07150e;
+      }
+    </style>
+
+    <div class="caixa">
+      <h2>${cliente ? "Editar empresa" : "Adicionar empresa"}</h2>
+      <p style="color:#9baaba;font-size:13px">
+        Preencha os dados da empresa.
+      </p>
+
+      <form id="formEmpresa">
+        <label>Nome da empresa *</label>
+        <input id="empresaNome" required placeholder="Ex.: Nova Major">
+
+        <label>Segmento</label>
+        <input id="empresaSegmento" placeholder="Ex.: Lanchonete">
+
+        <label>Cidade</label>
+        <input id="empresaCidade" placeholder="Cidade">
+
+        <label>Telefone / WhatsApp</label>
+        <input id="empresaTelefone" placeholder="(00) 00000-0000">
+
+        <label>Valor estimado (R$)</label>
+        <input id="empresaValor" type="number" min="0" step="0.01" placeholder="0,00">
+
+        <label>Etapa do cliente</label>
+        <select id="empresaEtapa">
+          <option value="Lead">🆕 Novo lead</option>
+          <option value="Contato feito">📞 Contato feito</option>
+          <option value="Negociação">🤝 Em negociação</option>
+          <option value="Cliente">✅ Cliente fechado</option>
+          <option value="Perdido">❌ Perdido</option>
+        </select>
+
+        <div class="botoes">
+          <button type="button" class="cancelar"
+            id="cancelarEmpresa">Cancelar</button>
+          <button type="submit" class="salvar">Salvar empresa</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  if (cliente) {
+    document.getElementById("empresaNome").value = cliente.nome || "";
+    document.getElementById("empresaSegmento").value = cliente.segmento || "";
+    document.getElementById("empresaCidade").value = cliente.cidade || "";
+    document.getElementById("empresaTelefone").value = cliente.telefone || "";
+    document.getElementById("empresaValor").value = cliente.valor || 0;
+    document.getElementById("empresaEtapa").value = cliente.etapa || "Lead";
+  }
+
+  document.getElementById("cancelarEmpresa").onclick = () => modal.remove();
+
+  document.getElementById("formEmpresa").onsubmit = function(e) {
+    e.preventDefault();
+
+    const dados = {
+      nome: document.getElementById("empresaNome").value.trim(),
+      segmento: document.getElementById("empresaSegmento").value.trim() || "Não informado",
+      cidade: document.getElementById("empresaCidade").value.trim() || "Não informada",
+      telefone: document.getElementById("empresaTelefone").value.trim(),
+      valor: Number(document.getElementById("empresaValor").value) || 0,
+      etapa: document.getElementById("empresaEtapa").value
+    };
+
+    if (cliente) {
+      Object.assign(cliente, dados);
+    } else {
+      clientes.push({
+        id: Date.now(),
+        ...dados,
+        obs: ""
+      });
+    }
+
+    salvar();
+    atualizar();
+    modal.remove();
+  };
 }
-function editar(id){
-let c=clientes.find(x=>x.id===id);if(!c)return;
-let nome=prompt("Nome da empresa:",c.nome);if(!nome)return;
-c.nome=nome;
-c.segmento=prompt("Segmento:",c.segmento)||c.segmento;
-c.cidade=prompt("Cidade:",c.cidade)||c.cidade;
-c.telefone=prompt("Telefone:",c.telefone)||c.telefone;
-c.valor=Number(prompt("Valor estimado:",c.valor)||c.valor);
-c.etapa=prompt("Etapa: Lead, Contato feito, Negociação ou Cliente",c.etapa)||c.etapa;
-salvar();
+
+function novoCliente() {
+  abrirFormulario();
 }
+
+function editar(id) {
+  const cliente = clientes.find(c => c.id === id);
+  if (!cliente) return;
+  abrirFormulario(cliente);
+}
+
 function excluir(id){
 if(confirm("Deseja excluir este cliente?")){clientes=clientes.filter(c=>c.id!==id);salvar()}
 }
