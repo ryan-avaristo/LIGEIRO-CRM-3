@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIGEIRO CRM 3.0</title>
+<style>
+:root{--bg:#080d18;--panel:#101a2b;--panel2:#152238;--green:#20d695;--text:#f2f6fc;--muted:#8d9bb0;--border:#26364d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:235px;background:#0c1423;border-right:1px solid var(--border);padding:24px 15px;position:fixed;inset:0 auto 0 0}
+.logo{font-size:25px;font-weight:900;margin:8px 10px 35px}
+.logo span{color:var(--green)}
+.menu button{display:block;width:100%;text-align:left;padding:14px;border:0;background:none;color:var(--muted);border-radius:9px;margin:5px 0}
+.menu button.active,.menu button:hover{background:#19283c;color:var(--green)}
+.main{margin-left:235px;padding:30px;width:calc(100% - 235px)}
+header{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}
+h1{font-size:25px;margin:0 0 7px}
+p{color:var(--muted);margin:0}
+.tag{color:var(--green);font-size:12px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:25px}
+.card,.panel{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:20px}
+.card small{color:var(--muted)}
+.card strong{display:block;font-size:27px;margin-top:12px}
+.panel{margin-bottom:20px}
+.panel h2{font-size:17px;margin:0 0 17px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+input,select,textarea{background:#0b1422;border:1px solid var(--border);color:white;padding:12px;border-radius:8px;min-width:0}
+input:focus,select:focus,textarea:focus{outline:1px solid var(--green)}
+.search{flex:1;min-width:180px}
+.btn{border:0;border-radius:8px;padding:11px 16px;background:var(--green);color:#07150f;font-weight:bold}
+.btn.secondary{background:#20334a;color:white}
+.btn.danger{background:#522b36;color:#ffb8c1}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{text-align:left;padding:14px 10px;border-bottom:1px solid var(--border);font-size:13px}
+th{color:var(--muted)}
+.table-wrap{overflow-x:auto}
+.status{color:var(--green)}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.page{display:none}
+.page.active{display:block}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.formgrid input,.formgrid select,.formgrid textarea{width:100%}
+.formgrid .full{grid-column:1/-1}
+textarea{min-height:90px;resize:vertical}
+.notice{background:#13283a;padding:14px;border-radius:9px;color:#b7c8dc;line-height:1.6}
+.builder{min-height:130px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+@media(max-width:800px){
+.sidebar{width:65px;padding:15px 5px}
+.logo{font-size:0;margin:12px 8px 30px}
+.logo:first-letter{font-size:25px;color:var(--green)}
+.menu button{font-size:0;text-align:center;padding:14px 3px}
+.menu button:first-letter{font-size:19px}
+.main{margin-left:65px;width:calc(100% - 65px);padding:17px 12px}
+.cards{grid-template-columns:1fr 1fr}
+header{align-items:flex-start}
+.formgrid{grid-template-columns:1fr}
+.formgrid .full{grid-column:auto}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+<div class="logo">LIGEIRO<span>.</span></div>
+<nav class="menu">
+<button class="active" data-page="dashboard">▦ Dashboard</button>
+<button data-page="clientes">♙ Clientes</button>
+<button data-page="prospector">⌕ Prospector</button>
+<button data-page="builder">✦ AI Builder</button>
+<button data-page="whatsapp">◉ WhatsApp</button>
+<button data-page="projetos">▣ Projetos</button>
+</nav>
+</aside>
+
+<main class="main">
+<header>
+<div>
+<h1 id="pageTitle">Dashboard</h1>
+<p>Seu negócio em movimento.</p>
+</div>
+<span class="tag">● LIGEIRO CRM 3.0</span>
+</header>
+
+<section class="page active" id="dashboard">
+<div class="cards">
+<div class="card"><small>Total de clientes</small><strong id="total">0</strong></div>
+<div class="card"><small>Novos contatos</small><strong id="novos">0</strong></div>
+<div class="card"><small>Em negociação</small><strong id="negociacao">0</strong></div>
+<div class="card"><small>Valor potencial</small><strong id="valor">R$ 0</strong></div>
+</div>
+<div class="panel">
+<h2>Últimos clientes cadastrados</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Empresa</th><th>Segmento</th><th>Etapa</th></tr></thead>
+<tbody id="recentes"></tbody>
+</table></div>
+</div>
+<div class="notice">Bem-vindo ao Ligeiro! Cadastre seus primeiros clientes para começar a organizar sua prospecção.</div>
+</section>
+
+<section class="page" id="clientes">
+<div class="panel">
+<div class="toolbar">
+<input class="search" id="busca" placeholder="Pesquisar empresa...">
+<select id="filtro">
+<option value="">Todas as etapas</option>
+<option>Lead</option><option>Contato feito</option><option>Negociação</option><option>Cliente</option>
+</select>
+<button class="btn" onclick="novoCliente()">+ Novo cliente</button>
+</div>
+<div class="table-wrap"><table>
+<thead><tr><th>Empresa</th><th>Segmento</th><th>Cidade</th><th>Etapa</th><th>Valor</th><th>Ações</th></tr></thead>
+<tbody id="lista"></tbody>
+</table></div>
+<div id="vazio" class="empty">Nenhum cliente cadastrado.</div>
+<div style="margin-top:15px"><button class="btn secondary" onclick="exportar()">Exportar CSV</button></div>
+</div>
+</section>
+
+<section class="page" id="prospector">
+<div class="panel">
+<h2>Encontre novos negócios</h2>
+<p style="margin-bottom:15px">Pesquise empresas publicamente no Google Maps.</p>
+<div class="toolbar">
+<input id="termo" class="search" placeholder="Ex.: barbearias em Cuiabá MT">
+<button class="btn" onclick="pesquisarMaps()">Pesquisar no Maps</button>
+</div>
+<div class="notice">A pesquisa abre o Google Maps. A coleta automática de dados e o cadastro direto ainda serão implementados.</div>
+</div>
+</section>
+
+<section class="page" id="builder">
+<div class="panel">
+<h2>✦ Ligeiro AI Builder</h2>
+<p style="margin-bottom:15px">Descreva o site que deseja criar.</p>
+<textarea id="pedido" class="builder" placeholder="Ex.: Crie um site moderno para uma barbearia, com galeria de fotos, preços, endereço e botão de WhatsApp..."></textarea>
+<button class="btn" style="margin-top:12px" onclick="gerarIdeia()">Criar projeto</button>
+<div id="resposta" style="margin-top:18px"></div>
+</div>
+<div class="notice">Esta é uma área demonstrativa. A geração real de sites por IA será conectada posteriormente.</div>
+</section>
+
+<section class="page" id="whatsapp">
+<div class="panel">
+<h2>Central de WhatsApp</h2>
+<p style="margin-bottom:15px">Prepare uma mensagem para seu próximo cliente.</p>
+<input id="nomeWhats" placeholder="Nome da empresa" style="width:100%;margin-bottom:10px">
+<input id="foneWhats" placeholder="Telefone com DDD" style="width:100%;margin-bottom:10px">
+<textarea id="msgWhats" style="width:100%">Olá! Tudo bem? Conheci sua empresa e gostaria de apresentar uma ideia de site profissional para ajudar a divulgar seu negócio.</textarea>
+<button class="btn" style="margin-top:12px" onclick="abrirWhats()">Abrir WhatsApp</button>
+</div>
+</section>
+
+<section class="page" id="projetos">
+<div class="panel">
+<h2>Projetos</h2>
+<div class="notice">Seus projetos de criação de sites aparecerão aqui. Em breve você poderá acompanhar cada projeto, editar e organizar suas entregas.</div>
+</div>
+</section>
+
+<footer>LIGEIRO CRM 3.0 • Sua empresa, em movimento.</footer>
+</main>
+</div>
+
+<script>
+let clientes=JSON.parse(localStorage.getItem("ligeiro_clientes")||"[]");
+function salvar(){localStorage.setItem("ligeiro_clientes",JSON.stringify(clientes));atualizar()}
+function dinheiro(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.querySelectorAll(".menu button").forEach(x=>x.classList.remove("active"));
+document.getElementById(b.dataset.page).classList.add("active");
+b.classList.add("active");
+document.getElementById("pageTitle").textContent=b.textContent.trim();
+});
+
+function novoCliente(){
+let nome=prompt("Nome da empresa:");
+if(!nome||!nome.trim())return;
+let segmento=prompt("Segmento da empresa:")||"Não informado";
+let cidade=prompt("Cidade:")||"Não informada";
+let telefone=prompt("Telefone/WhatsApp:")||"";
+let valor=Number(prompt("Valor estimado (somente números):")||0);
+clientes.push({id:Date.now(),nome:nome.trim(),segmento,cidade,telefone,valor,etapa:"Lead",obs:""});
+salvar();
+}
+function editar(id){
+let c=clientes.find(x=>x.id===id);if(!c)return;
+let nome=prompt("Nome da empresa:",c.nome);if(!nome)return;
+c.nome=nome;
+c.segmento=prompt("Segmento:",c.segmento)||c.segmento;
+c.cidade=prompt("Cidade:",c.cidade)||c.cidade;
+c.telefone=prompt("Telefone:",c.telefone)||c.telefone;
+c.valor=Number(prompt("Valor estimado:",c.valor)||c.valor);
+c.etapa=prompt("Etapa: Lead, Contato feito, Negociação ou Cliente",c.etapa)||c.etapa;
+salvar();
+}
+function excluir(id){
+if(confirm("Deseja excluir este cliente?")){clientes=clientes.filter(c=>c.id!==id);salvar()}
+}
+function atualizar(){
+let total=clientes.length;
+document.getElementById("total").textContent=total;
+document.getElementById("novos").textContent=clientes.filter(c=>c.etapa==="Lead").length;
+document.getElementById("negociacao").textContent=clientes.filter(c=>c.etapa==="Negociação").length;
+document.getElementById("valor").textContent=dinheiro(clientes.reduce((s,c)=>s+Number(c.valor||0),0));
+let busca=document.getElementById("busca").value.toLowerCase();
+let filtro=document.getElementById("filtro").value;
+let filtrados=clientes.filter(c=>(c.nome+" "+c.segmento+" "+c.cidade).toLowerCase().includes(busca)&&(!filtro||c.etapa===filtro));
+document.getElementById("lista").innerHTML=filtrados.map(c=>`<tr>
+<td>${esc(c.nome)}</td><td>${esc(c.segmento)}</td><td>${esc(c.cidade)}</td>
+<td class="status">${esc(c.etapa)}</td><td>${dinheiro(c.valor)}</td>
+<td><button class="btn secondary" onclick="editar(${c.id})">Editar</button> <button class="btn danger" onclick="excluir(${c.id})">Excluir</button></td>
+</tr>`).join("");
+document.getElementById("vazio").style.display=filtrados.length?"none":"block";
+document.getElementById("recentes").innerHTML=clientes.slice(-5).reverse().map(c=>`<tr><td>${esc(c.nome)}</td><td>${esc(c.segmento)}</td><td class="status">${esc(c.etapa)}</td></tr>`).join("")||'<tr><td colspan="3">Nenhum cliente cadastrado.</td></tr>';
+}
+document.getElementById("busca").addEventListener("input",atualizar);
+document.getElementById("filtro").addEventListener("change",atualizar);
+function exportar(){
+let linhas=[["Empresa","Segmento","Cidade","Telefone","Etapa","Valor"],...clientes.map(c=>[c.nome,c.segmento,c.cidade,c.telefone,c.etapa,c.valor])];
+let csv=linhas.map(l=>l.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\n");
+let a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.download="ligeiro-clientes.csv";a.click();URL.revokeObjectURL(a.href);
+}
+function pesquisarMaps(){
+let t=document.getElementById("termo").value.trim();
+if(!t){alert("Digite o tipo de empresa e a cidade.");return}
+window.open("https://www.google.com/maps/search/"+encodeURIComponent(t),"_blank");
+}
+function gerarIdeia(){
+let p=document.getElementById("pedido").value.trim();
+if(!p){alert("Descreva o site que deseja criar.");return}
+document.getElementById("resposta").innerHTML="<div class='notice'><strong>Projeto recebido!</strong><br><br>Descrição salva nesta demonstração:<br>"+esc(p)+"<br><br>A conexão com a inteligência artificial será implementada em uma próxima etapa.</div>";
+}
+function abrirWhats(){
+let nome=document.getElementById("nomeWhats").value.trim();
+let f=document.getElementById("foneWhats").value.replace(/\D/g,"");
+let msg=document.getElementById("msgWhats").value;
+if(!f){alert("Informe o telefone com DDD.");return}
+let texto=msg.replace(/\[empresa\]/gi,nome);
+window.open("https://wa.me/"+f+"?text="+encodeURIComponent(texto),"_blank");
+}
+atualizar();
+</script>
+</body>
+</html>
