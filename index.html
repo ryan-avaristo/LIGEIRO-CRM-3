@@ -2,6 +2,16 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+const SUPABASE_URL = "https://ibsotegknpuqbldpmvql.supabase.co";
+const SUPABASE_KEY = "sb_publishable_nBEAj5y0PP1P4iOf6oz8Tg_vW1szPH3";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIGEIRO CRM 3.0</title>
