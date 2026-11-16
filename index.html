@@ -18,7 +18,8 @@ const supabaseClient = supabase.createClient(
 <style>
 :root{--bg:#080d18;--panel:#101a2b;--panel2:#152238;--green:#20d695;--text:#f2f6fc;--muted:#8d9bb0;--border:#26364d}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
 button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .layout{display:flex;min-height:100vh}
@@ -72,9 +73,54 @@ header{align-items:flex-start}
 .formgrid{grid-template-columns:1fr}
 .formgrid .full{grid-column:auto}
 }
+  #telaLogin {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0b1120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.login-card {
+  background: #151f32;
+  padding: 35px;
+  border-radius: 16px;
+  text-align: center;
+  width: 85%;
+  max-width: 360px;
+  border: 1px solid #26364d;
+}
+
+.login-card h1 {
+  color: #22c55e;
+}
+
+.login-card button {
+  background: #22c55e;
+  color: #07111f;
+  border: 0;
+  padding: 14px;
+  border-radius: 9px;
+  width: 100%;
+  font-weight: bold;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
+  <div id="telaLogin">
+  <div class="login-card">
+    <h1>LIGEIRO</h1>
+    <p>CRM 3.0</p>
+    <p>Entre com sua conta Google para continuar.</p>
+    <button onclick="entrarGoogle()">Entrar com Google</button>
+    <p id="erroLogin"></p>
+  </div>
+</div>
 <div class="layout">
 <aside class="sidebar">
 <div class="logo">LIGEIRO<span>.</span></div>
@@ -387,6 +433,42 @@ let texto=msg.replace(/\[empresa\]/gi,nome);
 window.open("https://wa.me/"+f+"?text="+encodeURIComponent(texto),"_blank");
 }
 atualizar();
+</script>
+<script>
+async function entrarGoogle() {
+  const { error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: 'https://ryan-avaristo.github.io/LIGEIRO-CRM-3/'
+    }
+  });
+
+  if (error) {
+    document.getElementById('erroLogin').textContent =
+      'Erro ao entrar: ' + error.message;
+  }
+}
+
+async function verificarSessao() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    document.getElementById('erroLogin').textContent = error.message;
+    return;
+  }
+
+  if (data.session) {
+    document.getElementById('telaLogin').style.display = 'none';
+  }
+}
+
+verificarSessao();
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    document.getElementById('telaLogin').style.display = 'none';
+  }
+});
 </script>
 </body>
 </html>
