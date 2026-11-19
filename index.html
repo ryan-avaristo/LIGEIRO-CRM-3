@@ -226,7 +226,42 @@ header{align-items:flex-start}
 
 <script>
 let clientes=JSON.parse(localStorage.getItem("ligeiro_clientes")||"[]");
-function salvar(){localStorage.setItem("ligeiro_clientes",JSON.stringify(clientes));atualizar()}
+
+async function salvar(){
+  localStorage.setItem("ligeiro_clientes", JSON.stringify(clientes));
+  atualizar();
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) {
+    alert("Você precisa entrar na sua conta Google.");
+    return;
+  }
+
+  const registros = clientes.map(cliente => ({
+    id: cliente.id,
+    nome: cliente.nome,
+    segmento: cliente.segmento,
+    cidade: cliente.cidade,
+    telefone: cliente.telefone,
+    valor: cliente.valor,
+    etapa: cliente.etapa,
+    obs: cliente.obs || "",
+    user_id: session.user.id
+  }));
+
+  if (registros.length === 0) return;
+
+  const { error } = await supabaseClient
+    .from("clientes")
+    .upsert(registros);
+
+  if (error) {
+    alert("Erro ao salvar na nuvem: " + error.message);
+    console.error(error);
+  }
+}
+
 function dinheiro(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
