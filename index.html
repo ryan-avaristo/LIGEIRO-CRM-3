@@ -422,8 +422,25 @@ function editar(id) {
   abrirFormulario(cliente);
 }
 
-function excluir(id){
-if(confirm("Deseja excluir este cliente?")){clientes=clientes.filter(c=>c.id!==id);salvar()}
+
+async function excluir(id){
+  if(!confirm("Deseja excluir este cliente?")) return;
+
+  const { error } = await supabaseClient
+    .from("clientes")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert("Erro ao excluir: " + error.message);
+    return;
+  }
+
+  clientes = clientes.filter(c => c.id !== id);
+  localStorage.setItem("ligeiro_clientes", JSON.stringify(clientes));
+  atualizar();
+}
+
 }
 function atualizar(){
 let total=clientes.length;
@@ -493,9 +510,42 @@ async function verificarSessao() {
   }
 
   if (data.session) {
-    document.getElementById('telaLogin').style.display = 'none';
+  document.getElementById('telaLogin').style.display = 'none';
+  await carregarClientesNuvem();
+}
   }
 }
+async function carregarClientesNuvem(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+
+  if (!session) return;
+
+  const { data, error } = await supabaseClient
+    .from("clientes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    alert("Erro ao carregar clientes: " + error.message);
+    console.error(error);
+    return;
+  }
+
+  clientes = data.map(c => ({
+    id: c.id,
+    nome: c.nome,
+    segmento: c.segmento,
+    cidade: c.cidade,
+    telefone: c.telefone,
+    valor: c.valor,
+    etapa: c.etapa,
+    obs: c.obs || ""
+  }));
+
+  localStorage.setItem("ligeiro_clientes", JSON.stringify(clientes));
+  atualizar();
+}
+
 
 verificarSessao();
 
