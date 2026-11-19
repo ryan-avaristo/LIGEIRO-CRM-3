@@ -441,7 +441,7 @@ async function excluir(id){
   atualizar();
 }
 
-}
+
 function atualizar(){
 let total=clientes.length;
 document.getElementById("total").textContent=total;
@@ -513,7 +513,6 @@ async function verificarSessao() {
   document.getElementById('telaLogin').style.display = 'none';
   await carregarClientesNuvem();
 }
-  }
 }
 async function carregarClientesNuvem(){
   const { data: { session } } = await supabaseClient.auth.getSession();
