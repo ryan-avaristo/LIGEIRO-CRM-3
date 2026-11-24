@@ -262,6 +262,9 @@ async function salvar(){
     segmento: cliente.segmento,
     cidade: cliente.cidade,
     telefone: cliente.telefone,
+    instagram: cliente.instagram || "",
+    maps_link: cliente.maps_link || "",
+    site: cliente.site || "",
     valor: cliente.valor,
     etapa: cliente.etapa,
     obs: cliente.obs || "",
@@ -367,6 +370,14 @@ function abrirFormulario(cliente = null) {
 
         <label>Telefone / WhatsApp</label>
         <input id="empresaTelefone" placeholder="(00) 00000-0000">
+        <label>Instagram da empresa</label>
+<input id="empresaInstagram" placeholder="@instagram">
+
+<label>Link do Google Maps</label>
+<input id="empresaMaps" placeholder="Link do Google Maps">
+
+<label>Site da empresa</label>
+<input id="empresaSite" placeholder="https://www.exemplo.com">
 
         <label>Valor estimado (R$)</label>
         <input id="empresaValor" type="number" min="0" step="0.01" placeholder="0,00">
@@ -396,6 +407,9 @@ function abrirFormulario(cliente = null) {
     document.getElementById("empresaSegmento").value = cliente.segmento || "";
     document.getElementById("empresaCidade").value = cliente.cidade || "";
     document.getElementById("empresaTelefone").value = cliente.telefone || "";
+    document.getElementById("empresaInstagram").value = cliente.instagram || "";
+    document.getElementById("empresaMaps").value = cliente.maps_link || "";
+    document.getElementById("empresaSite").value = cliente.site || "";
     document.getElementById("empresaValor").value = cliente.valor || 0;
     document.getElementById("empresaEtapa").value = cliente.etapa || "Lead";
   }
@@ -410,6 +424,9 @@ function abrirFormulario(cliente = null) {
       segmento: document.getElementById("empresaSegmento").value.trim() || "Não informado",
       cidade: document.getElementById("empresaCidade").value.trim() || "Não informada",
       telefone: document.getElementById("empresaTelefone").value.trim(),
+      instagram: document.getElementById("empresaInstagram").value.trim(),
+      maps_link: document.getElementById("empresaMaps").value.trim(),
+      site: document.getElementById("empresaSite").value.trim(),
       valor: Number(document.getElementById("empresaValor").value) || 0,
       etapa: document.getElementById("empresaEtapa").value
     };
