@@ -31,26 +31,7 @@ const supabaseClient = supabase.createClient(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIGEIRO CRM 3.0</title>
-.perfil-usuario .avatar-usuario {
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px;
-  flex: 0 0 40px;
-  overflow: hidden;
-  border-radius: 50%;
-}
 
-.perfil-usuario .avatar-usuario img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.perfil-usuario {
-  padding: 10px;
-  margin: 10px;
-}
   <style>
 :root{--bg:#080d18;--panel:#101a2b;--panel2:#152238;--green:#20d695;--text:#f2f6fc;--muted:#8d9bb0;--border:#26364d}
 *{box-sizing:border-box}
@@ -168,15 +149,6 @@ header{align-items:flex-start}
 <button data-page="whatsapp">◉ WhatsApp</button>
 <button data-page="projetos">▣ Projetos</button>
 </nav>
-
-<div class="perfil-usuario" onclick="abrirMinhaConta()">
-  <div class="avatar-usuario">👤</div>
-  <div>
-    <strong id="nomeUsuario">Minha conta</strong>
-    <small>Dono</small>
-  </div>
-  <span>⚙</span>
-</div>
 
 </aside>
 
@@ -557,35 +529,8 @@ async function verificarSessao() {
   if (data.session) {
     document.getElementById('telaLogin').style.display = 'none';
 
-    const usuario = data.session.user;
 
-    const nome =
-      usuario.user_metadata?.full_name ||
-      usuario.user_metadata?.name ||
-      usuario.email?.split('@')[0] ||
-      'Minha conta';
-
-    document.getElementById('nomeUsuario').textContent = nome;
-
-    const foto =
-      usuario.user_metadata?.avatar_url ||
-      usuario.user_metadata?.picture;
-
-    if (foto) {
-      const avatar = document.querySelector('.avatar-usuario');
-      const imagem = document.createElement('img');
-
-      imagem.src = foto;
-      imagem.alt = 'Foto do perfil';
-      imagem.style.width = '100%';
-      imagem.style.height = '100%';
-      imagem.style.borderRadius = '50%';
-      imagem.style.objectFit = 'cover';
-
-      avatar.textContent = '';
-      avatar.appendChild(imagem);
-    }
-
+    
     await carregarClientesNuvem();
   }
 }
