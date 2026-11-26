@@ -200,12 +200,30 @@ header{align-items:flex-start}
 <section class="page" id="prospector">
 <div class="panel">
 <h2>Encontre novos negócios</h2>
-<p style="margin-bottom:15px">Pesquise empresas publicamente no Google Maps.</p>
+
+<p style="margin-bottom:15px">
+  Encontre empresas em qualquer cidade do Brasil.
+</p>
+
 <div class="toolbar">
-<input id="termo" class="search" placeholder="Ex.: barbearias em Cuiabá MT">
-<button class="btn" onclick="pesquisarMaps()">Pesquisar no Maps</button>
+  <input
+    id="termo"
+    class="search"
+    placeholder="Ex.: barbearias, Sinop MT"
+  >
+
+  <button class="btn" onclick="pesquisarMaps()">
+    Pesquisar empresas
+  </button>
 </div>
-<div class="notice">A pesquisa abre o Google Maps. A coleta automática de dados e o cadastro direto ainda serão implementados.</div>
+
+<div id="resultadosProspector" style="margin-top:20px"></div>
+
+<div class="notice">
+  Dados públicos do OpenStreetMap.
+  A disponibilidade de informações varia conforme a região.
+  © OpenStreetMap contributors.
+</div>
 </div>
 </section>
 
@@ -500,10 +518,101 @@ let linhas=[["Empresa","Segmento","Cidade","Telefone","Etapa","Valor"],...client
 let csv=linhas.map(l=>l.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\n");
 let a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));a.download="ligeiro-clientes.csv";a.click();URL.revokeObjectURL(a.href);
 }
-function pesquisarMaps(){
-let t=document.getElementById("termo").value.trim();
-if(!t){alert("Digite o tipo de empresa e a cidade.");return}
-window.open("https://www.google.com/maps/search/"+encodeURIComponent(t),"_blank");
+let empresasProspector = [];
+
+async function pesquisarMaps() {
+  const termo = document.getElementById("termo").value.trim();
+  const area = document.getElementById("resultadosProspector");
+
+  if (!termo) {
+    alert("Digite o segmento e a cidade. Ex.: barbearias, Sinop MT");
+    return;
+  }
+
+  area.innerHTML = "Buscando empresas...";
+
+  try {
+    const { data, error } = await supabaseClient.functions.invoke(
+      "buscar-empresas",
+      {
+        body: { termo }
+      }
+    );
+
+    if (error) throw error;
+
+    if (data.erro) {
+      area.textContent = data.erro;
+      return;
+    }
+
+    empresasProspector = data.empresas || [];
+
+    if (empresasProspector.length === 0) {
+      area.textContent = "Nenhuma empresa encontrada. Tente outro segmento ou cidade.";
+      return;
+    }
+
+    area.innerHTML = empresasProspector.map((empresa, i) => `
+      <div class="panel" style="margin-bottom:12px">
+        <h3>${escapeProspector(empresa.nome)}</h3>
+        <p>${escapeProspector(empresa.endereco || empresa.cidade)}</p>
+        <p>${escapeProspector(empresa.telefone || "Telefone não informado")}</p>
+        <button class="btn" onclick="adicionarEmpresaProspector(${i})">
+          Adicionar ao CRM
+        </button>
+      </div>
+    `).join("");
+
+  } catch (erro) {
+    console.error(erro);
+    area.textContent = "Não foi possível buscar empresas. Verifique sua conexão e tente novamente.";
+  }
+}
+
+function escapeProspector(valor) {
+  return String(valor || "").replace(/[&<>"']/g, letra => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[letra]);
+}
+
+function adicionarEmpresaProspector(index) {
+  const empresa = empresasProspector[index];
+  if (!empresa) return;
+
+  const duplicada = clientes.some(c =>
+    (c.maps_link && c.maps_link === empresa.maps_link) ||
+    (c.nome.toLowerCase() === empresa.nome.toLowerCase() &&
+     c.cidade.toLowerCase() === empresa.cidade.toLowerCase())
+  );
+
+  if (duplicada) {
+    alert("Essa empresa já está cadastrada no LIGEIRO!");
+    return;
+  }
+
+  clientes.push({
+    id: Date.now(),
+    nome: empresa.nome,
+    segmento: empresa.segmento || "Não informado",
+    cidade: empresa.cidade || "",
+    telefone: empresa.telefone || "",
+    instagram: empresa.instagram || "",
+    maps_link: empresa.maps_link || "",
+    site: empresa.site || "",
+    valor: 0,
+    etapa: "lead",
+    obs: ""
+  });
+
+  salvar();
+  atualizar();
+
+  alert("Empresa adicionada ao LIGEIRO!");
 }
 function gerarIdeia(){
 let p=document.getElementById("pedido").value.trim();
